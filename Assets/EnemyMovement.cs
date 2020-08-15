@@ -17,19 +17,15 @@ public class EnemyMovement : MonoBehaviour
     {
         time = 1f / speed;
         StartCoroutine(FollowPath());
-        print("Hey i'm back at start");
     }
 
     IEnumerator FollowPath()
     {
-        print("Starting patrol...");
         foreach (Waypoint waypoint in path)
         {
-            print("Visiting block: " + waypoint.name);
             StartCoroutine(SmoothLerp(time, waypoint));
             yield return new WaitForSeconds(time);
         }
-        print("Ending patrol");
     }
 
     private IEnumerator SmoothLerp(float time, Waypoint target)
