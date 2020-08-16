@@ -8,18 +8,18 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     [SerializeField] [Range(0.01f, 4f)] float speed = 1f;
-    [SerializeField] List<Waypoint> path = null;
 
     float time;
 
-    // Start is called before the first frame update
     void Start()
     {
         time = 1f / speed;
-        StartCoroutine(FollowPath());
+        Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
+        Stack<Waypoint> path = pathfinder.GetPath();
+        StartCoroutine(FollowPath(path));
     }
 
-    IEnumerator FollowPath()
+    IEnumerator FollowPath(Stack<Waypoint> path)
     {
         foreach (Waypoint waypoint in path)
         {

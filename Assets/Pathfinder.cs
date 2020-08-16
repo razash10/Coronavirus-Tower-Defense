@@ -6,8 +6,12 @@ using UnityEngine;
 public class Pathfinder : MonoBehaviour
 {
     [SerializeField] Waypoint startWaypoint = null, endWaypoint = null;
-
+    
     Dictionary<Vector2Int, Waypoint> grid = new Dictionary<Vector2Int, Waypoint>();
+    Queue<Waypoint> queue = new Queue<Waypoint>();
+    bool isRunning = true;
+    Waypoint searchCenter;
+    public Stack<Waypoint> path = new Stack<Waypoint>();
 
     Vector2Int[] directions =
     {
@@ -17,22 +21,63 @@ public class Pathfinder : MonoBehaviour
         Vector2Int.left
     };
 
-    // Start is called before the first frame update
-    void Start()
+    public Stack<Waypoint> GetPath()
     {
         LoadBlocks();
+        BFS();
         ColorStartAndEnd();
-        ExploreNeighbours();
+        CreatePath();
+        return path;
+    }
+
+    private void CreatePath()
+    {
+        path.Push(endWaypoint);
+        Waypoint prev = endWaypoint.exploredFrom;
+        while(prev != startWaypoint)
+        {
+            prev.SetTopColor(Color.yellow);
+            path.Push(prev);
+            prev = prev.exploredFrom;
+        }
+        path.Push(startWaypoint);
+    }
+
+    private void BFS()
+    {
+        queue.Enqueue(startWaypoint);
+        while(queue.Count > 0 && isRunning)
+        {
+            searchCenter = queue.Dequeue();
+            HaltIfEndFound();
+            ExploreNeighbours();
+            searchCenter.isExplored = true;
+        }
+    }
+
+    private void HaltIfEndFound()
+    {
+        if(searchCenter == endWaypoint)
+        {
+            isRunning = false;
+        }
     }
 
     private void ExploreNeighbours()
     {
+        if(!isRunning) { return; }
+
         foreach(Vector2Int direction in directions)
         {
-            Vector2Int newDirection = startWaypoint.GetGridPos() + direction;
+            Vector2Int neighbourCoordinates = searchCenter.GetGridPos() + direction;
             try
             {
-                grid[newDirection].SetTopColor(Color.yellow);
+                Waypoint neighbour = grid[neighbourCoordinates];
+                if (!neighbour.isExplored && !queue.Contains(neighbour))
+                {
+                    queue.Enqueue(neighbour);
+                    neighbour.exploredFrom = searchCenter;
+                }
             }
             catch
             {
